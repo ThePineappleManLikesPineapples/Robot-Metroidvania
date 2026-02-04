@@ -41,7 +41,6 @@ public class Health : MonoBehaviour
 
     public void AddHealth(float AddedHealth)
     {
-        print("Health Changed:" + AddedHealth);
         if (AddedHealth < 0 && isInvincible)
         {
             return;
