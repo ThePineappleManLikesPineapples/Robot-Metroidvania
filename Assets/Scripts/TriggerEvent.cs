@@ -48,4 +48,9 @@ public class TriggerEvent : MonoBehaviour
     {
         PlayerManager.Instance.ResetToCheckpoint();
     }
+
+    public void MovementActive(bool value)
+    {
+        PlayerManager.Instance.movement.enabled = value;
+    }
 }

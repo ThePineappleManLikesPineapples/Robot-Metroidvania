@@ -3,12 +3,19 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Cinemachine;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class LevelManager : MonoBehaviour
 {
     public List<Vector3> Entrances;
     private void Awake()
     {
+        if (AreaManager.Instance == null)
+        {
+            print("Sending To GameLoader");
+            SceneManager.LoadScene("GameLoader");
+            return;
+        }
         Vector3 SpawnPosition = Entrances[AreaManager.Instance.NewEntrance];
         if (PlayerManager.Instance.player != null)
         {

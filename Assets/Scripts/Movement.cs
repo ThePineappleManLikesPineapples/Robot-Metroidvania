@@ -1,13 +1,13 @@
 using UnityEngine;
 using System.Collections;
+using JetBrains.Annotations;
 
 public class Movement : MonoBehaviour
 {
-    private float horizontal;
+    private float moveDirection;
     [SerializeField] private float speed = 8f;
     [SerializeField] private float jumpingPower = 16f;
-    [SerializeField] private float deacceleration = 0.5f;
-    [SerializeField] private float fallSpeed = 0.5f;
+    [SerializeField] private float fallLerp = 0.8f;
 
     private bool isJumping;
 
@@ -17,8 +17,10 @@ public class Movement : MonoBehaviour
     [SerializeField] private float jumpBufferTime = 0.2f;
     private float jumpBufferCounter;
 
+    [SerializeField] private float knockbackBufferTime = 0.2f;
+    private float knockbackBufferCounter;
 
-     private readonly float groundRadius = 0.2f;
+    private readonly float groundRadius = 0.2f;
 
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Transform groundCheck;
@@ -26,7 +28,7 @@ public class Movement : MonoBehaviour
 
     private void Update()
     {
-        horizontal = Input.GetAxisRaw("Horizontal");
+        moveDirection = Input.GetAxisRaw("Horizontal");
 
         if (IsGrounded())
         {
@@ -46,9 +48,11 @@ public class Movement : MonoBehaviour
             jumpBufferCounter -= Time.deltaTime;
         }
 
+        knockbackBufferCounter -= Time.deltaTime;
+
         if (coyoteTimeCounter > 0f && jumpBufferCounter > 0f && !isJumping)
         {
-            rb.linearVelocityY += jumpingPower;
+            rb.linearVelocityY = Mathf.Lerp(rb.linearVelocityY, jumpingPower, 0.5f);
 
             jumpBufferCounter = 0f;
 
@@ -56,12 +60,11 @@ public class Movement : MonoBehaviour
         }
 
 
-        if (Input.GetButtonDown("Jump") || Input.GetKeyDown(KeyCode.Z))
+        if (Input.GetButtonUp("Jump") || Input.GetKeyUp(KeyCode.Z))
         {
             if (rb.linearVelocity.y > 0f)
             {
-                rb.linearVelocityY = rb.linearVelocity.y * fallSpeed;
-
+                rb.linearVelocityY = Mathf.Lerp(rb.linearVelocityY, 0, fallLerp);
                 coyoteTimeCounter = 0f;
             }
         }
@@ -69,17 +72,13 @@ public class Movement : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if ( !(Mathf.Abs(rb.linearVelocityX) > Mathf.Abs(horizontal * speed)))
+        if (knockbackBufferCounter < 0f)
         {
-            rb.linearVelocityX = horizontal * speed;
-        }
-        if (horizontal * speed == 0)
-        {
-            rb.linearVelocityX *= deacceleration;
+            rb.linearVelocityX = Mathf.Lerp(rb.linearVelocityX, moveDirection * speed, 0.5f);
         }
     }
 
-    private bool IsGrounded()
+    public bool IsGrounded()
     {
         return Physics2D.OverlapCircle(groundCheck.position, groundRadius, groundLayer);
     }
@@ -94,6 +93,8 @@ public class Movement : MonoBehaviour
     public void AddForce(Vector3 knockbackOrigin , float forcespeed)
     {
         Vector3 direction = (transform.position - knockbackOrigin).normalized;
-        rb.AddForce((direction) * forcespeed);
+        Vector2 TotalForce = ((direction) * forcespeed);
+        rb.linearVelocity += TotalForce;
+        knockbackBufferCounter = knockbackBufferTime;
     }
 }

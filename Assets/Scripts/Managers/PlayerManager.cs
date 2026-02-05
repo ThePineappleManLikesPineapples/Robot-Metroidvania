@@ -50,7 +50,14 @@ public class PlayerManager : MonoBehaviour
         UI.UpdateGears();
         UI.UpdateHealth();
         movement = player.gameObject.GetComponent<Movement>();
-        AreaManager.Instance.ChangeScene(PlayerPrefs.GetString("RespawnScene"), PlayerPrefs.GetInt("RespawnEntranceInt"));
+        if (PlayerPrefs.GetString("RespawnScene") != string.Empty)
+        {
+            AreaManager.Instance.ChangeScene(PlayerPrefs.GetString("RespawnScene"), PlayerPrefs.GetInt("RespawnEntranceInt"));
+        }
+        else
+        {
+            AreaManager.Instance.ChangeScene("RoomTest-West", 0);
+        }
         DontDestroyOnLoad(player.gameObject);
     }
 }
